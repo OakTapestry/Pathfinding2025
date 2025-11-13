@@ -1,72 +1,59 @@
-using System.IO;
 using UnityEngine;
 
 public class Pathfinder : MonoBehaviour
 {
     [SerializeField] GameObject startNode, endNode, currentNode, targetNode, prevNode;
-    [SerializeField] GameObject[] waypoints;
 
-    float movementSpeed = 3.0f;
-    int waypointIndex = 0;
+    float movementSpeed = 6.0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        transform.position = startNode.transform.position;
         currentNode = startNode;
         targetNode = currentNode;
-        endNode = waypoints[waypointIndex];
+
+        transform.position = currentNode.transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
-        // If the AI is at the targetNode then find a new target to move to.
-        if (Vector3.Distance(transform.position, targetNode.transform.position) < 0.1f)
+        if (Vector3.Distance(transform.position, targetNode.transform.position) < 0.2f)
         {
             prevNode = currentNode;
             currentNode = targetNode;
 
-            if (currentNode == endNode)
+            //bool found = false;
+            //int breakOut = 0;
+
+            //while (!found)
+            //{
+            //    targetNode = currentNode.GetComponent<Pathnode>().connections[Random.Range(0, currentNode.GetComponent<Pathnode>().connections.Count)];
+
+            //    if (targetNode != prevNode || breakOut > 10)
+            //    {
+            //        found = true;
+            //    }
+            //    breakOut++;
+            //}
+
+            float closestDist = 10000;
+
+            Pathnode currentScript = currentNode.GetComponent<Pathnode>();
+
+            for (int i = 0; i < currentScript.connections.Count; i++)
             {
-                waypointIndex++;
-                
-                if (waypointIndex >= waypoints.Length)
+                if (Vector3.Distance(currentScript.connections[i].transform.position, endNode.transform.position) < closestDist)
                 {
-                    waypointIndex = 0;
-                }
-
-                endNode = waypoints[waypointIndex];
-            }
-
-            float closestDistance = 10000;
-            //GameObject closestNode;
-
-            Pathnode pathscript = currentNode.GetComponent<Pathnode>();
-
-            if (pathscript != null)
-            {
-                //bool found = false;
-                //int pathIndex = 0;
-
-                //int randomNum = Random.Range(0, pathscript.connections.Count);
-                for (int i = 0; i < pathscript.connections.Count; i++)
-                {
-                    if (pathscript.connections[i] != prevNode)
+                    if (currentScript.connections[i] != prevNode)
                     {
-                        if (Vector3.Distance(pathscript.connections[i].transform.position, endNode.transform.position) < closestDistance)
-                        {
-                            targetNode = pathscript.connections[i];
-                            closestDistance = Vector3.Distance(pathscript.connections[i].transform.position, endNode.transform.position);
-                        }
-                    }
+                        closestDist = Vector3.Distance(currentScript.connections[i].transform.position, endNode.transform.position);
+                        targetNode = currentScript.connections[i];
+                    }                    
                 }
-                //targetNode = pathscript.connections[pathIndex];
             }
         }
-        else
-        {
-            transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * Time.deltaTime);
-        }
+
+        transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * Time.deltaTime);
     }
 }
