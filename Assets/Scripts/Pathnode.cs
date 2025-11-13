@@ -5,16 +5,19 @@ using UnityEngine;
 public class Pathnode : MonoBehaviour
 {
     public List<GameObject> connections;
-    public List<GameObject> force;
-    public List<GameObject> block;
-    public List<GameObject> activeConnections;
+    //public List<GameObject> force;
+    //public List<GameObject> block;
+    //public List<GameObject> activeConnections;
+
+    public bool nodeActive = true;
 
     Pathnode()
     {
         connections = new List<GameObject>();
-        force = new List<GameObject>();
-        block = new List<GameObject>();
-        activeConnections = new List<GameObject>();
+        //force = new List<GameObject>();
+        //block = new List<GameObject>();
+        //activeConnections = new List<GameObject>();
+        nodeActive = true;
     }
 
     public void AddConnection(GameObject target)
@@ -34,7 +37,15 @@ public class Pathnode : MonoBehaviour
 
         foreach (GameObject target in connections)
         {
-            Gizmos.color = Color.green;
+            if (target.GetComponent<Pathnode>().nodeActive == true)
+            {
+                Gizmos.color = Color.green;
+            }
+            else
+            {
+                Gizmos.color = Color.red;
+            }
+            
             Gizmos.DrawLine(transform.position, target.transform.position + new Vector3(0, 0.5f, 0));
         }
     }

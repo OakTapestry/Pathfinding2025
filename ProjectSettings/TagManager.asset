@@ -7,6 +7,8 @@ TagManager:
   - Pathnode
   - Floor
   - SpawnTrigger
+  - Door
+  - Wall
   layers:
   - Default
   - TransparentFX

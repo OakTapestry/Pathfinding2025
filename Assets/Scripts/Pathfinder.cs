@@ -45,7 +45,7 @@ public class Pathfinder : MonoBehaviour
             {
                 if (Vector3.Distance(currentScript.connections[i].transform.position, endNode.transform.position) < closestDist)
                 {
-                    if (currentScript.connections[i] != prevNode)
+                    if (currentScript.connections[i] != prevNode && currentScript.connections[i].GetComponent<Pathnode>().nodeActive)
                     {
                         closestDist = Vector3.Distance(currentScript.connections[i].transform.position, endNode.transform.position);
                         targetNode = currentScript.connections[i];

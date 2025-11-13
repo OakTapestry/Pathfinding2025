@@ -158,6 +158,7 @@ public class EditorMenu : MonoBehaviour
                         count++;
                         spawnedNode.name = "Pathnode" + count;
                         spawnedNode.transform.parent = trigger;
+                        spawnedNode.GetComponent<Pathnode>().nodeActive = true;
                     } 
                 }
             }
@@ -252,6 +253,7 @@ public class EditorMenu : MonoBehaviour
     static void BuildPaths()
     {
         allNodes = GameObject.FindGameObjectsWithTag("Pathnode");
+        RaycastHit hit;
         foreach (GameObject node in allNodes)
         {
             node.GetComponent<Pathnode>().ClearConnections();
@@ -261,12 +263,20 @@ public class EditorMenu : MonoBehaviour
                 // Make sure the target node is not the current node
                 if (node.transform != target.transform)
                 {
-                    if (Vector3.Distance(node.transform.position, target.transform.position) <= 3.1f &&
-                        !Physics.SphereCast(new Ray(node.transform.position + new Vector3(0, 1, 0), target.transform.position - node.transform.position), 0.4f, Vector3.Distance(node.transform.position, target.transform.position)) &&
-                        !Physics.CheckSphere(node.transform.position + new Vector3(0, 1, 0), 0.4f))
+                    if (Vector3.Distance(node.transform.position, target.transform.position) <= 3.1f)
                     {
-                        node.GetComponent<Pathnode>().AddConnection(target);
-                    }
+                        if (!Physics.SphereCast(new Ray(node.transform.position + new Vector3(0, 1, 0), target.transform.position - node.transform.position), 0.4f, out hit, Vector3.Distance(node.transform.position, target.transform.position)))
+                       {
+                            node.GetComponent<Pathnode>().AddConnection(target);
+                        }
+                       else
+                       {
+                            if (hit.transform.tag != "Wall")
+                            {
+                                node.GetComponent<Pathnode>().AddConnection(target);
+                            }
+                       }
+                    }                    
                 }
             }
         }
