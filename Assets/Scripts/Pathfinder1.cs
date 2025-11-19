@@ -5,12 +5,13 @@ using static UnityEngine.GraphicsBuffer;
 public class Pathfinder1 : MonoBehaviour
 {
     [SerializeField] GameObject startNode, endNode, currentNode, targetNode, prevNode, jailNode;
+    [SerializeField] GameObject jailDoor;
     [SerializeField] GameObject[] waypoints;
     [SerializeField] GameObject BlueSpy;
     [SerializeField] GameObject RedSpy;
     [SerializeField] float forwardDist;
 
-    float movementSpeed = 3.0f;
+    float movementSpeed = 2.6f;
     int waypointIndex = 0;
     [SerializeField] bool searchingForSpy = false;
 
@@ -110,11 +111,13 @@ public class Pathfinder1 : MonoBehaviour
 
         if (Vector3.Distance(transform.position, BlueSpy.transform.position) < 0.5f)
         {
+            jailDoor.GetComponent<Door>().open = false;
             //move the spy to jail
             BlueSpy.transform.position = new Vector3(SpyJail.x, BlueSpy.transform.position.y, SpyJail.z);
             //set their current node to jail
             BlueSpy.GetComponent<Pathfinder>().targetNode = jailNode;
             searchingForSpy = false;
+            BlueSpy.GetComponent<Pathfinder>().jailed = true;
         }
         //if (Vector3.Distance(transform.position, RedSpy.transform.position) < 0.1f)
         //{
@@ -129,7 +132,8 @@ public class Pathfinder1 : MonoBehaviour
     {
         float detectionRangeBlue, detectionRangeRed;
         bool foundBlue = false, foundRed = false;
-        
+        GameObject bestConnectionBlue = null;
+
 
         //look for blue spy
         RaycastHit hitBlue;
@@ -138,7 +142,12 @@ public class Pathfinder1 : MonoBehaviour
 
         detectionRangeBlue = Vector3.Distance(transform.position, BlueSpy.transform.position);
 
+        ////look for red spy
+        //RaycastHit hitRed;
+        //hitSomething = Physics.Linecast(transform.position + new Vector3(0, 0.5f, 0), RedSpy.transform.position + new Vector3(0, 0.5f, 0), out hitRed);
+        //Debug.DrawRay(transform.position + new Vector3(0, 0.5f, 0), hitRed.point - transform.position + new Vector3(0, 0.5f, 0), Color.green);
 
+        //detectionRangeRed = Vector3.Distance(transform.position, RedSpy.transform.position);
 
         if (hitBlue.collider != null && hitBlue.collider == BlueSpy.GetComponentInChildren<Collider>())
         {
@@ -148,7 +157,7 @@ public class Pathfinder1 : MonoBehaviour
             Pathnode currScript = currentNode.GetComponent<Pathnode>();
 
             float bestDist = float.MaxValue;
-            GameObject bestConnection = null;
+            
 
             for(int i = 0; i < currScript.connections.Count; i++)
             {
@@ -157,32 +166,49 @@ public class Pathfinder1 : MonoBehaviour
                 if (dist < bestDist)
                 {
                     bestDist = dist;
-                    bestConnection = conn;
+                    bestConnectionBlue = conn;
                 }
             }
 
-            targetNode = bestConnection;
+            targetNode = bestConnectionBlue;
         }
 
 
-        //look for red spy
-        //Physics.Linecast(transform.position + new Vector3(0, 0.1f, 0), RedSpy.transform.position + new Vector3(0, 0.1f, 0), out RaycastHit hitRed);
-        //detectionRangeRed = Vector3.Distance(transform.position, RedSpy.transform.position);
+        
 
 
-        //if (hitRed.collider.gameObject == RedSpy.gameObject)
+
+        //if (hitRed.collider != null && hitRed.collider == RedSpy.GetComponentInChildren<Collider>())
         //{
         //    foundRed = true;
-        //    targetNode = RedSpy.GetComponent<Pathfinder>().currentNode;
+        //    searchingForSpy = true;
+        //    endNode = RedSpy.GetComponent<Pathfinder>().currentNode;
+        //    Pathnode currScript = currentNode.GetComponent<Pathnode>();
+
+        //    float bestDist = float.MaxValue;
+        //    GameObject bestConnection = null;
+
+        //    for (int i = 0; i < currScript.connections.Count; i++)
+        //    {
+        //        var conn = currScript.connections[i];
+        //        float dist = Vector3.Distance(conn.transform.position, endNode.transform.position);
+        //        if (dist < bestDist)
+        //        {
+        //            bestDist = dist;
+        //            bestConnection = conn;
+        //        }
+        //    }
+
+        //    targetNode = bestConnection;
         //}
 
 
-        //go after the closest spy if both are found
+        ////go after the closest spy if both are found
         //if (foundBlue && foundRed)
         //{
         //    if (detectionRangeBlue < detectionRangeRed)
         //    {
-        //        targetNode = BlueSpy.GetComponent<Pathfinder>().currentNode;
+        //        targetNode = bestConnectionBlue;
         //    }
         //}
 
