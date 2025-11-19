@@ -9,6 +9,7 @@ TagManager:
   - SpawnTrigger
   - Door
   - Wall
+  - Blue
   layers:
   - Default
   - TransparentFX

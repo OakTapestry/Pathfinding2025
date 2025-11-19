@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Pathfinder : MonoBehaviour
 {
-    [SerializeField] GameObject startNode, endNode, currentNode, targetNode, prevNode;
+    [SerializeField] public GameObject startNode, endNode, currentNode, targetNode, prevNode;
 
     float movementSpeed = 6.0f;
 
