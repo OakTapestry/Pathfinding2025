@@ -739,7 +739,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   connections:
   - {fileID: 1247260426}
-  - {fileID: 417328301}
   nodeActive: 0
 --- !u!4 &123127855
 Transform:
@@ -10295,6 +10294,26 @@ PrefabInstance:
       propertyPath: 'guards.Array.data[4]'
       value: 
       objectReference: {fileID: 853103640}
+    - target: {fileID: 6628799158203611716, guid: aca87eb4bf9179947a31bf38beaaee6f, type: 3}
+      propertyPath: escapeNodes.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6628799158203611716, guid: aca87eb4bf9179947a31bf38beaaee6f, type: 3}
+      propertyPath: 'escapeNodes.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1858361441}
+    - target: {fileID: 6628799158203611716, guid: aca87eb4bf9179947a31bf38beaaee6f, type: 3}
+      propertyPath: 'escapeNodes.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1172711430}
+    - target: {fileID: 6628799158203611716, guid: aca87eb4bf9179947a31bf38beaaee6f, type: 3}
+      propertyPath: 'escapeNodes.Array.data[2]'
+      value: 
+      objectReference: {fileID: 1382401871}
+    - target: {fileID: 6628799158203611716, guid: aca87eb4bf9179947a31bf38beaaee6f, type: 3}
+      propertyPath: 'escapeNodes.Array.data[3]'
+      value: 
+      objectReference: {fileID: 1326910429}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 1888577509935614616, guid: aca87eb4bf9179947a31bf38beaaee6f, type: 3}
@@ -10665,6 +10684,26 @@ PrefabInstance:
       propertyPath: 'guards.Array.data[4]'
       value: 
       objectReference: {fileID: 853103640}
+    - target: {fileID: 1381161106630982074, guid: 010fafb29f697a84ebf960c615d9231e, type: 3}
+      propertyPath: escapeNodes.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1381161106630982074, guid: 010fafb29f697a84ebf960c615d9231e, type: 3}
+      propertyPath: 'escapeNodes.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1858361441}
+    - target: {fileID: 1381161106630982074, guid: 010fafb29f697a84ebf960c615d9231e, type: 3}
+      propertyPath: 'escapeNodes.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1172711430}
+    - target: {fileID: 1381161106630982074, guid: 010fafb29f697a84ebf960c615d9231e, type: 3}
+      propertyPath: 'escapeNodes.Array.data[2]'
+      value: 
+      objectReference: {fileID: 1382401871}
+    - target: {fileID: 1381161106630982074, guid: 010fafb29f697a84ebf960c615d9231e, type: 3}
+      propertyPath: 'escapeNodes.Array.data[3]'
+      value: 
+      objectReference: {fileID: 1326910429}
     - target: {fileID: 2564868363457841398, guid: 010fafb29f697a84ebf960c615d9231e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -53.18
