@@ -1,18 +1,52 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class Pathfinder : MonoBehaviour
 {
     [SerializeField] public GameObject startNode, endNode, currentNode, targetNode, prevNode;
+    [SerializeField] public GameObject[] escapeNodes;
     [SerializeField] public GameObject button1, button2, button3, document;
-    [SerializeField] public GameObject jailDoor, button1Door, button2Door, documentDoor;
+    [SerializeField] public GameObject jailDoor;
     [SerializeField] public GameObject[] guards;
 
     float movementSpeed = 6.0f;
     public bool jailed = false;
+    public bool isBlueSpy = false;
     public float jailTime = 0;
+    bool setRunning = false;
+    float sightDistance = 10.0f;
+    bool canSwap = true;
 
-    float closeDoorTime = 0;
-    bool runningAway = false;
+    float disguiseTimer = 0;
+    float disguiseCooldown = 0;
+    public bool disguised = false;
+    bool disguiseReady = false;
+
+
+    float speedTimer = 0;
+    float speedCooldown = 0;
+    bool speedBoost = false;
+    bool speedReady = false;
+
+    bool setEscape = false;
+
+    Color basicColor = Color.red;
+    Color disguisedColor = Color.green;
+
+    GameObject escapeNode;
+
+    public goalState currentGoal = goalState.BUTTON1;
+    goalState lastGoal = goalState.BUTTON1;
+
+    public enum goalState
+    {
+        RUNNING,
+        BUTTON1,
+        BUTTON2,
+        BUTTON3,
+        DOCUMENT,
+        ESCAPE
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -21,31 +55,140 @@ public class Pathfinder : MonoBehaviour
         targetNode = currentNode;
 
         transform.position = currentNode.transform.position;
+
+        if (isBlueSpy)
+        {
+            speedReady = true;
+        }
+        else
+        {
+            disguiseReady = true;
+        }
+        foreach (GameObject node in escapeNodes)
+        {
+            node.GetComponent<Pathnode>().nodeActive = false;
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        RayDetection();
+
+        switch (currentGoal)
+        {
+            case goalState.RUNNING:
+                // endNode remains unchanged
+                break;
+            case goalState.BUTTON1:
+                endNode = button1;
+                if (currentNode == button1)
+                {
+                    currentGoal = goalState.BUTTON2;
+                    lastGoal = goalState.BUTTON2;
+                }
+                break;
+            case goalState.BUTTON2:
+                endNode = button2;
+                if (currentNode == button2)
+                {
+                    currentGoal = goalState.BUTTON3;
+                    lastGoal = goalState.BUTTON3;
+                }
+                break;
+            case goalState.BUTTON3:
+                endNode = button3;
+                if (currentNode == button3)
+                {
+                    currentGoal = goalState.DOCUMENT;
+                    lastGoal = goalState.DOCUMENT;
+                }
+                break;
+            case goalState.DOCUMENT:
+                endNode = document;
+                if (currentNode == document)
+                {
+                    currentGoal = goalState.ESCAPE;
+                    lastGoal = goalState.ESCAPE;
+                }
+                break;
+            case goalState.ESCAPE:
+                endNode = escapeNode;
+                if(!setEscape)
+                {
+                    setEscape = true;
+                    escapeNode = escapeNodes[Random.Range(0, escapeNodes.Length)];
+                    escapeNode.GetComponent<Pathnode>().nodeActive = true;
+                }
+                break;
+        }
+
+        if (Vector3.Distance(transform.position, currentNode.transform.position) > 1f)
+        {
+            canSwap = false;
+        }
+
+        if (isBlueSpy)
+        {
+            if (speedBoost)
+            {
+                movementSpeed = 12.0f;
+                speedTimer += Time.deltaTime;
+                if (speedTimer > 5f)
+                {
+                    speedBoost = false;
+                    speedReady = false;
+                    movementSpeed = 6;
+                    speedTimer = 0;
+                    speedCooldown = 0;
+                }
+            }
+            if (!speedReady)
+            {
+                speedCooldown += Time.deltaTime;
+                if (speedCooldown > 10f)
+                {
+                    speedReady = true;
+                    speedCooldown = 0;
+                }
+            }
+        }
+        else
+        {
+            if (disguised)
+            {
+                GetComponentInChildren<Renderer>().material.color = disguisedColor;
+                disguiseTimer += Time.deltaTime;
+                if (disguiseTimer > 5f)
+                {
+                    disguised = false;
+                    disguiseReady = false;
+                    disguiseTimer = 0;
+                    disguiseCooldown = 0;
+                }
+            }
+            if (!disguiseReady)
+            {
+                GetComponentInChildren<Renderer>().material.color = basicColor;
+                disguiseCooldown += Time.deltaTime;
+                if (disguiseCooldown > 10f)
+                {
+                    disguiseReady = true;
+                    disguiseCooldown = 0;
+                }
+            }
+        }
+
+
+        if (canSwap)
+        {
+            RayDetection();
+        }
+
 
         if (Vector3.Distance(transform.position, targetNode.transform.position) < 0.2f)
         {
             prevNode = currentNode;
             currentNode = targetNode;
-
-            //bool found = false;
-            //int breakOut = 0;
-
-            //while (!found)
-            //{
-            //    targetNode = currentNode.GetComponent<Pathnode>().connections[Random.Range(0, currentNode.GetComponent<Pathnode>().connections.Count)];
-
-            //    if (targetNode != prevNode || breakOut > 10)
-            //    {
-            //        found = true;
-            //    }
-            //    breakOut++;
-            //}
 
             float closestDist = 10000;
 
@@ -59,30 +202,26 @@ public class Pathfinder : MonoBehaviour
                     {
                         closestDist = Vector3.Distance(currentScript.connections[i].transform.position, endNode.transform.position);
                         targetNode = currentScript.connections[i];
+                        canSwap = true;
                     }
                 }
             }
         }
 
-        transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * Time.deltaTime);
+        if (!jailed)
+        {
+            transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * Time.deltaTime);
+        }
 
         if (jailed)
         {
             jailTime += Time.deltaTime;
-            if (jailTime > 5.0f)
+            if (jailTime > 10f)
             {
                 jailed = false;
                 jailTime = 0;
                 jailDoor.GetComponent<Door>().open = true;
-                closeDoorTime = 0;
             }
-        }
-
-        closeDoorTime += Time.deltaTime;
-
-        if (closeDoorTime > 2)
-        {
-            jailDoor.GetComponent<Door>().open = false;
         }
     }
 
@@ -102,7 +241,7 @@ public class Pathfinder : MonoBehaviour
             Vector3 to = guard.transform.position + new Vector3(0, 0.5f, 0);
 
             bool hitSomething = Physics.Linecast(from, to, out hit);
-            Debug.DrawLine(from, to, hitSomething ? Color.green : Color.red);
+            Debug.DrawLine(from, to, Color.green);
 
             // consider a guard "seen" when the linecast hit that guard (or one of its child colliders)
             if (hitSomething && hit.collider != null)
@@ -112,28 +251,54 @@ public class Pathfinder : MonoBehaviour
                 if (hitRoot == guardRoot)
                 {
                     foundGuard[i] = true;
-                    runningAway = true;
+                    if (disguiseReady)
+                    {
+                        disguised = true;
+                    }
+                    else
+                    {
+                        if (!setRunning && Vector3.Distance(transform.position, guards[i].transform.position) < sightDistance)
+                        {
+                            lastGoal = currentGoal;
+                            currentGoal = goalState.RUNNING;
+                            setRunning = true;
+                        }
+                    }
                 }
             }
         }
 
         // if none seen, stop running
-        bool anyGuardFound = false;
-        for (int i = 0; i < foundGuard.Length; i++)
+        if (!disguised)
         {
-            if (foundGuard[i]) 
-            { 
-                anyGuardFound = true;
+            bool anyGuardFound = false;
+            for (int i = 0; i < foundGuard.Length; i++)
+            {
+                if (foundGuard[i])
+                {
+                    anyGuardFound = true;
+                }
+            }
+
+            if (!anyGuardFound)
+            {
+                currentGoal = lastGoal;
+                setRunning = false;
             }
         }
-            
-        if (!anyGuardFound)
+        else
         {
-            runningAway = false;
+            currentGoal = lastGoal;
+            setRunning = false;
         }
 
-        if (runningAway)
+
+        if (currentGoal == goalState.RUNNING)
         {
+            if (speedReady)
+            {
+                speedBoost = true;
+            }
             Pathnode currScript = currentNode.GetComponent<Pathnode>();
 
             float bestOverallScore = float.MinValue;
@@ -163,11 +328,12 @@ public class Pathfinder : MonoBehaviour
                 }
 
 
-                
+
             }
             if (bestConnection != null)
             {
                 targetNode = bestConnection;
+                canSwap = false;
             }
         }
     }

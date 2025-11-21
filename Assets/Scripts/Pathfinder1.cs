@@ -12,6 +12,7 @@ public class Pathfinder1 : MonoBehaviour
     [SerializeField] float forwardDist;
 
     float movementSpeed = 2.6f;
+    float sightDistance = 10.0f;
     int waypointIndex = 0;
     [SerializeField] bool searchingForSpy = false;
 
@@ -31,10 +32,13 @@ public class Pathfinder1 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         RayDetection();
+
 
         if (Vector3.Distance(transform.position, targetNode.transform.position) < 0.2f && searchingForSpy)
         {
+
             prevNode = currentNode;
             currentNode = targetNode;
 
@@ -46,7 +50,7 @@ public class Pathfinder1 : MonoBehaviour
             {
                 if (Vector3.Distance(currentScript.connections[i].transform.position, endNode.transform.position) < closestDist)
                 {
-                    if (currentScript.connections[i] != prevNode && currentScript.connections[i].GetComponent<Pathnode>().nodeActive)
+                    if (currentScript.connections[i].GetComponent<Pathnode>().nodeActive)
                     {
                         closestDist = Vector3.Distance(currentScript.connections[i].transform.position, endNode.transform.position);
                         targetNode = currentScript.connections[i];
@@ -64,11 +68,12 @@ public class Pathfinder1 : MonoBehaviour
         {
             transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * 2 * Time.deltaTime);
         }
-        
+
 
         // If the AI is at the targetNode then find a new target to move to.
         if (Vector3.Distance(transform.position, targetNode.transform.position) < 0.1f && !searchingForSpy)
         {
+
             prevNode = currentNode;
             currentNode = targetNode;
 
@@ -92,7 +97,7 @@ public class Pathfinder1 : MonoBehaviour
             {
                 for (int i = 0; i < pathscript.connections.Count; i++)
                 {
-                    if (pathscript.connections[i] != prevNode)
+                    if (pathscript.connections[i] != prevNode && pathscript.connections[i].GetComponent<Pathnode>().nodeActive)
                     {
                         if (Vector3.Distance(pathscript.connections[i].transform.position, endNode.transform.position) < closestDistance)
                         {
@@ -103,8 +108,8 @@ public class Pathfinder1 : MonoBehaviour
                 }
             }
         }
-        
-        if(!searchingForSpy)
+
+        if (!searchingForSpy)
         {
             transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * Time.deltaTime);
         }
@@ -119,13 +124,16 @@ public class Pathfinder1 : MonoBehaviour
             searchingForSpy = false;
             BlueSpy.GetComponent<Pathfinder>().jailed = true;
         }
-        //if (Vector3.Distance(transform.position, RedSpy.transform.position) < 0.1f)
-        //{
-        //    //move the spy to jail
-        //    RedSpy.transform.position = new Vector3(SpyJail.x, RedSpy.transform.position.y, SpyJail.z);
-        //    //set their current node to jail
-        //    RedSpy.GetComponent<Pathfinder>().targetNode = jailNode;
-        //}
+        if (Vector3.Distance(transform.position, RedSpy.transform.position) < 0.5f && !RedSpy.GetComponent<Pathfinder>().disguised)
+        {
+            jailDoor.GetComponent<Door>().open = false;
+            //move the spy to jail
+            RedSpy.transform.position = new Vector3(SpyJail.x, RedSpy.transform.position.y, SpyJail.z);
+            //set their current node to jail
+            RedSpy.GetComponent<Pathfinder>().targetNode = jailNode;
+            searchingForSpy = false;
+            RedSpy.GetComponent<Pathfinder>().jailed = true;
+        }
     }
 
     private void RayDetection()
@@ -133,23 +141,17 @@ public class Pathfinder1 : MonoBehaviour
         float detectionRangeBlue, detectionRangeRed;
         bool foundBlue = false, foundRed = false;
         GameObject bestConnectionBlue = null;
+        GameObject bestConnectionRed = null;
 
 
         //look for blue spy
         RaycastHit hitBlue;
-        bool hitSomething = Physics.Linecast(transform.position + new Vector3(0, 0.5f, 0), BlueSpy.transform.position + new Vector3(0, 0.5f, 0), out hitBlue);
+        Physics.Linecast(transform.position + new Vector3(0, 0.5f, 0), BlueSpy.transform.position + new Vector3(0, 0.5f, 0), out hitBlue);
         Debug.DrawRay(transform.position + new Vector3(0, 0.5f, 0), hitBlue.point - transform.position + new Vector3(0, 0.5f, 0), Color.green);
 
         detectionRangeBlue = Vector3.Distance(transform.position, BlueSpy.transform.position);
 
-        ////look for red spy
-        //RaycastHit hitRed;
-        //hitSomething = Physics.Linecast(transform.position + new Vector3(0, 0.5f, 0), RedSpy.transform.position + new Vector3(0, 0.5f, 0), out hitRed);
-        //Debug.DrawRay(transform.position + new Vector3(0, 0.5f, 0), hitRed.point - transform.position + new Vector3(0, 0.5f, 0), Color.green);
-
-        //detectionRangeRed = Vector3.Distance(transform.position, RedSpy.transform.position);
-
-        if (hitBlue.collider != null && hitBlue.collider == BlueSpy.GetComponentInChildren<Collider>())
+        if (hitBlue.collider != null && hitBlue.collider == BlueSpy.GetComponentInChildren<Collider>() && Vector3.Distance(transform.position, BlueSpy.transform.position) < sightDistance && !BlueSpy.GetComponent<Pathfinder>().jailed)
         {
             foundBlue = true;
             searchingForSpy = true;
@@ -157,9 +159,9 @@ public class Pathfinder1 : MonoBehaviour
             Pathnode currScript = currentNode.GetComponent<Pathnode>();
 
             float bestDist = float.MaxValue;
-            
 
-            for(int i = 0; i < currScript.connections.Count; i++)
+
+            for (int i = 0; i < currScript.connections.Count; i++)
             {
                 var conn = currScript.connections[i];
                 float dist = Vector3.Distance(conn.transform.position, endNode.transform.position);
@@ -170,47 +172,58 @@ public class Pathfinder1 : MonoBehaviour
                 }
             }
 
-            targetNode = bestConnectionBlue;
+            if (Vector3.Distance(transform.position, currentNode.transform.position) < 1f)
+            {
+                targetNode = bestConnectionBlue;
+            }
+
         }
 
 
-        
+        //look for red spy
+        RaycastHit hitRed;
+        Physics.Linecast(transform.position + new Vector3(0, 0.5f, 0), RedSpy.transform.position + new Vector3(0, 0.5f, 0), out hitRed);
+        Debug.DrawRay(transform.position + new Vector3(0, 0.5f, 0), hitRed.point - transform.position + new Vector3(0, 0.5f, 0), Color.green);
+
+        detectionRangeRed = Vector3.Distance(transform.position, RedSpy.transform.position);
+
+        if (hitRed.collider != null && hitRed.collider == RedSpy.GetComponentInChildren<Collider>() && Vector3.Distance(transform.position, RedSpy.transform.position) < sightDistance && !RedSpy.GetComponent<Pathfinder>().jailed && !RedSpy.GetComponent<Pathfinder>().disguised)
+        {
+            foundRed = true;
+            searchingForSpy = true;
+            endNode = RedSpy.GetComponent<Pathfinder>().currentNode;
+            Pathnode currScript = currentNode.GetComponent<Pathnode>();
+
+            float bestDist = float.MaxValue;
 
 
+            for (int i = 0; i < currScript.connections.Count; i++)
+            {
+                var conn = currScript.connections[i];
+                float dist = Vector3.Distance(conn.transform.position, endNode.transform.position);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    bestConnectionRed = conn;
+                }
+            }
 
-        //if (hitRed.collider != null && hitRed.collider == RedSpy.GetComponentInChildren<Collider>())
-        //{
-        //    foundRed = true;
-        //    searchingForSpy = true;
-        //    endNode = RedSpy.GetComponent<Pathfinder>().currentNode;
-        //    Pathnode currScript = currentNode.GetComponent<Pathnode>();
+            if (Vector3.Distance(transform.position, currentNode.transform.position) < 1f)
+            {
+                targetNode = bestConnectionRed;
+            }
 
-        //    float bestDist = float.MaxValue;
-        //    GameObject bestConnection = null;
+        }
 
-        //    for (int i = 0; i < currScript.connections.Count; i++)
-        //    {
-        //        var conn = currScript.connections[i];
-        //        float dist = Vector3.Distance(conn.transform.position, endNode.transform.position);
-        //        if (dist < bestDist)
-        //        {
-        //            bestDist = dist;
-        //            bestConnection = conn;
-        //        }
-        //    }
-
-        //    targetNode = bestConnection;
-        //}
-
-
-        ////go after the closest spy if both are found
-        //if (foundBlue && foundRed)
-        //{
-        //    if (detectionRangeBlue < detectionRangeRed)
-        //    {
-        //        targetNode = bestConnectionBlue;
-        //    }
-        //}
+        //go after the closest spy if both are found
+        if (foundBlue && foundRed)
+        {
+            if (detectionRangeBlue <= detectionRangeRed && Vector3.Distance(transform.position, currentNode.transform.position) < 1f)
+            {
+                targetNode = bestConnectionBlue;
+                endNode = BlueSpy.GetComponent<Pathfinder>().currentNode;
+            }
+        }
 
     }
 }

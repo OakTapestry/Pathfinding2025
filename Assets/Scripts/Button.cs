@@ -22,7 +22,7 @@ public class Button : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Vector3.Distance(spy.transform.position, transform.position) < 1.5f && !pressed)
+        if (Vector3.Distance(spy.transform.position, transform.position) < 2f && !pressed)
         {
             pressed = true;
             linkedDoor.GetComponent<Door>().open = true;
