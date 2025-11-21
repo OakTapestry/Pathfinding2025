@@ -1,5 +1,8 @@
+using TMPro;
+using Unity.Mathematics.Geometry;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 public class Pathfinder : MonoBehaviour
 {
@@ -8,6 +11,8 @@ public class Pathfinder : MonoBehaviour
     [SerializeField] public GameObject button1, button2, button3, document;
     [SerializeField] public GameObject jailDoor;
     [SerializeField] public GameObject[] guards;
+    [SerializeField] public TextMeshProUGUI[] data;
+    [SerializeField] public RawImage documentImage;
 
     float movementSpeed = 6.0f;
     public bool jailed = false;
@@ -21,6 +26,7 @@ public class Pathfinder : MonoBehaviour
     float disguiseCooldown = 0;
     public bool disguised = false;
     bool disguiseReady = false;
+    int pressedButtons = 0;
 
 
     float speedTimer = 0;
@@ -68,12 +74,46 @@ public class Pathfinder : MonoBehaviour
         {
             node.GetComponent<Pathnode>().nodeActive = false;
         }
+        documentImage.enabled = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!isBlueSpy)
+        {
+            if (disguiseReady)
+            {
+                data[2].text = "Disguise: READY";
+                if (disguised)
+                {
+                    data[2].text = "Disguise: ACTIVE";
+                }
+            }
+            else
+            {
+                data[2].text = "Disguise: COOLING DOWN";
+            }
+        }
+        if (isBlueSpy)
+        {
+            if (speedReady)
+            {
+                data[2].text = "Speed Boost: READY";
+                if (speedBoost)
+                {
+                    data[2].text = "Speed Boost: ACTIVE";
+                }
+            }
+            else
+            {
+                data[2].text = "Speed Boost: COOLING DOWN";
+            }
+        }
 
+
+        data[1].text = "Current Goal: " + currentGoal.ToString();
+        data[0].text = "Pressed Buttons: " + pressedButtons.ToString() + "/3";
         switch (currentGoal)
         {
             case goalState.RUNNING:
@@ -83,6 +123,7 @@ public class Pathfinder : MonoBehaviour
                 endNode = button1;
                 if (currentNode == button1)
                 {
+                    pressedButtons += 1;
                     currentGoal = goalState.BUTTON2;
                     lastGoal = goalState.BUTTON2;
                 }
@@ -91,6 +132,7 @@ public class Pathfinder : MonoBehaviour
                 endNode = button2;
                 if (currentNode == button2)
                 {
+                    pressedButtons += 1;
                     currentGoal = goalState.BUTTON3;
                     lastGoal = goalState.BUTTON3;
                 }
@@ -99,6 +141,7 @@ public class Pathfinder : MonoBehaviour
                 endNode = button3;
                 if (currentNode == button3)
                 {
+                    pressedButtons += 1;
                     currentGoal = goalState.DOCUMENT;
                     lastGoal = goalState.DOCUMENT;
                 }
@@ -112,12 +155,26 @@ public class Pathfinder : MonoBehaviour
                 }
                 break;
             case goalState.ESCAPE:
+                documentImage.enabled = true;
                 endNode = escapeNode;
-                if(!setEscape)
+                if (!setEscape)
                 {
                     setEscape = true;
                     escapeNode = escapeNodes[Random.Range(0, escapeNodes.Length)];
                     escapeNode.GetComponent<Pathnode>().nodeActive = true;
+                }
+                if (currentNode == escapeNode)
+                {
+                    if (isBlueSpy)
+                    {
+                        data[4].text = "BLUE SPY ESCAPED WITH SOME DOCUMENTS!";
+                        data[4].color = Color.blue;
+                    }
+                    else
+                    {
+                        data[4].text = "RED SPY ESCAPED AFTER DESTROYING SOME DOCUMENTS!";
+                        data[4].color = Color.red;
+                    }
                 }
                 break;
         }
@@ -211,10 +268,13 @@ public class Pathfinder : MonoBehaviour
         if (!jailed)
         {
             transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * Time.deltaTime);
+            data[3].text = $"Roaming";
         }
 
         if (jailed)
         {
+            data[1].text = "Current Goal: JAILED";
+            data[3].text = $"Out In: {Mathf.Round(10 - jailTime)}s";
             jailTime += Time.deltaTime;
             if (jailTime > 10f)
             {

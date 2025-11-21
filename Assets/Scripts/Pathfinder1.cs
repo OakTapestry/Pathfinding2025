@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
@@ -10,10 +11,12 @@ public class Pathfinder1 : MonoBehaviour
     [SerializeField] GameObject BlueSpy;
     [SerializeField] GameObject RedSpy;
     [SerializeField] float forwardDist;
+    [SerializeField] public TextMeshProUGUI[] data;
 
     float movementSpeed = 2.6f;
     float sightDistance = 10.0f;
     int waypointIndex = 0;
+    int spiesCaught = 0;
     [SerializeField] bool searchingForSpy = false;
 
     Vector3 SpyJail;
@@ -27,6 +30,8 @@ public class Pathfinder1 : MonoBehaviour
         targetNode = currentNode;
         endNode = waypoints[waypointIndex];
         SpyJail = jailNode.transform.position;
+        data[0].text = (name)+": Patrolling";
+        data[1].text = "Spies Caught: " + spiesCaught;
     }
 
     // Update is called once per frame
@@ -66,6 +71,7 @@ public class Pathfinder1 : MonoBehaviour
 
         if (searchingForSpy)
         {
+            data[0].text = (name) + ": Chasing";
             transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * 2 * Time.deltaTime);
         }
 
@@ -111,6 +117,7 @@ public class Pathfinder1 : MonoBehaviour
 
         if (!searchingForSpy)
         {
+            data[0].text = (name) + ": Patrolling";
             transform.Translate((targetNode.transform.position - transform.position).normalized * movementSpeed * Time.deltaTime);
         }
 
@@ -123,6 +130,8 @@ public class Pathfinder1 : MonoBehaviour
             BlueSpy.GetComponent<Pathfinder>().targetNode = jailNode;
             searchingForSpy = false;
             BlueSpy.GetComponent<Pathfinder>().jailed = true;
+            spiesCaught++;
+            data[1].text = "Spies Caught: " + spiesCaught;
         }
         if (Vector3.Distance(transform.position, RedSpy.transform.position) < 0.5f && !RedSpy.GetComponent<Pathfinder>().disguised)
         {
@@ -133,6 +142,8 @@ public class Pathfinder1 : MonoBehaviour
             RedSpy.GetComponent<Pathfinder>().targetNode = jailNode;
             searchingForSpy = false;
             RedSpy.GetComponent<Pathfinder>().jailed = true;
+            spiesCaught++;
+            data[1].text = "Spies Caught: " + spiesCaught;
         }
     }
 

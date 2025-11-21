@@ -163,11 +163,29 @@ MonoBehaviour:
   currentNode: {fileID: 0}
   targetNode: {fileID: 0}
   prevNode: {fileID: 0}
+  escapeNodes:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   button1: {fileID: 0}
   button2: {fileID: 0}
   button3: {fileID: 0}
   document: {fileID: 0}
   jailDoor: {fileID: 0}
-  guards: []
+  guards:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  data:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   jailed: 0
+  isBlueSpy: 0
   jailTime: 0
+  disguised: 0
+  currentGoal: 1
